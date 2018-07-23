@@ -1,7 +1,7 @@
 try:
     import logging
-    from .firethorn_utils import configurator
-    from .firethorn_utils import validator
+    from . import configurator
+    from . import validator
 
 except Exception as e:
     print ("Error during py imports..(py.py): " + str(e))
