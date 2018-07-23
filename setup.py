@@ -24,11 +24,6 @@ setup(
         "Development Status :: 1 - Alpha",
         "Topic :: Utilities",
         "License :: GPL License",
-    ],
-    install_requires=[
-        'numpy>=1.4.0',
-        'astropy>=0.4.1',
-        'pyodbc>=4.0.21',
     ]
 )
 
