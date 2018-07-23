@@ -25,6 +25,7 @@ class Configurator(object):
         self.endpoint = firethorn_object.firethorn_engine.endpoint
         self.tap_included = True
         self.jdbc_resources = {}
+        self.ivoa_resources = {}
         
     
     def load_jdbc_resources(self, jdbc_resources_json):
@@ -52,6 +53,21 @@ class Configurator(object):
             jdbc_resource["jdbc_object"] = self.firethorn_object.firethorn_engine.create_jdbc_resource(name, jdbc_resource["datadata"], jdbc_resource["datacatalog"], jdbc_resource["datatype"], datahost, datauser, datapass)
             self.jdbc_resources[_id] = jdbc_resource
   
+
+    def load_ivoa_resources(self, ivoa_resources_json):
+        """
+        Load JDBC resources into map from json_file
+        """
+        for resource in ivoa_resources_json:
+            new_ivoa_resource = {}
+            _id = resource.get("id","")
+            name = resource.get("name","")
+            url = resource.get("url","")
+            ivoa_resource = self.firethorn_object.firethorn_engine.create_ivoa_resource(url=url, ivoa_space_name=name)
+            ivoa_resource.import_ivoa_metadoc(resource.get("metadoc"))
+            new_ivoa_resource["jdbc_object"] = ivoa_resource
+            self.ivoa_resources[_id] = new_ivoa_resource
+
         
     def create_adql_resource(self, resource):
         """
@@ -61,27 +77,42 @@ class Configurator(object):
         _id = resource.get("id","")
         adql_schemas = resource.get("Schemas","")
         
-        tap_name= name + " ADQL resource"
+        tap_name = name + " ADQL resource"
         new_adql_resource = self.firethorn_object.firethorn_engine.create_adql_resource(tap_name)
         
         for schema in adql_schemas:
-            schema_name = schema.get("adqlschema")
-            print ("Importing " + schema_name)
-            jdbc_resource_dict = self.jdbc_resources.get(schema.get("jdbcid"))
-            jdbc_resource_object = jdbc_resource_dict.get("jdbc_object")
-            jdbc_schema = jdbc_resource_object.select_schema_by_name(
-                schema.get("jdbccatalog"),
-                schema.get("jdbcschema")
-            )
             
-            if (jdbc_schema!=None):
-                metadoc = schema.get("metadata").get("metadoc")
-                metadoc_catalog_name = schema.get("metadata").get("catalog")
-                adql_schema = new_adql_resource.import_jdbc_schema(
-                    jdbc_schema,
-                    metadoc_catalog_name,
-                    metadoc=metadoc
-                    )
+            if (schema.get('ivoaid',"")!=""):
+                ivoa_resource_dict = self.ivoa_resources.get(schema.get("ivoaid"))
+                ivoa_resource_object = ivoa_resource_dict.get("jdbc_object")
+                ivoa_schema = ivoa_resource_object.select_schema_by_name(schema.get("ivoaschema"))
+                print ("Importing IVOA Schema: " + schema.get("ivoaschema"))
+
+                if (ivoa_schema!=None):
+                    new_adql_resource.import_ivoa_schema(
+                        ivoa_schema,
+                        schema.get("adqlschema")
+                        )
+                    
+            elif (schema.get('jdbcid',"")!=""):
+                
+                schema_name = schema.get("adqlschema")
+                print ("Importing JDBC Schema: " + schema_name)
+                jdbc_resource_dict = self.jdbc_resources.get(schema.get("jdbcid"))
+                jdbc_resource_object = jdbc_resource_dict.get("jdbc_object")
+                jdbc_schema = jdbc_resource_object.select_schema_by_name(
+                    schema.get("jdbccatalog"),
+                    schema.get("jdbcschema")
+                )
+                
+                if (jdbc_schema!=None):
+                    metadoc = schema.get("metadata").get("metadoc")
+                    metadoc_catalog_name = schema.get("metadata").get("catalog")
+                    adql_schema = new_adql_resource.import_jdbc_schema(
+                        jdbc_schema,
+                        metadoc_catalog_name,
+                        metadoc=metadoc
+                        )
                 
         return new_adql_resource
 
@@ -100,7 +131,7 @@ class Configurator(object):
         return self.endpoint + "/tap/"+ new_adql_resource.ident() + "/"
 
     
-    def setup_resources(self, json_file):
+    def load_resources(self, json_file):
         """
         For every AdqlResource in the json_file, setup the Resources (and TAP service if tap_included=true)
         """
@@ -110,14 +141,19 @@ class Configurator(object):
             with urllib.request.urlopen(json_file) as url:
                 json_obect = json.loads(url.read().decode())
         else :
-            data = open(json_file)
-            json_obect = json.load(data)
+            with open(json_file) as f:
+                json_obect = json.load(f)
+
     
         name = json_obect.get("name")
         adql_resources_json = json_obect.get("AdqlResources")
         jdbc_resources_json = json_obect.get("JdbcResources")
+        ivoa_resources_json = json_obect.get("IvoaResources")
+
 
         self.load_jdbc_resources(jdbc_resources_json)
+        self.load_ivoa_resources(ivoa_resources_json)
+        
         for resource in adql_resources_json:
             new_adql_resource = self.create_adql_resource(resource)
             if (self.tap_included):
@@ -125,10 +161,3 @@ class Configurator(object):
                 print ("TAP Service available at: " + tap)
             print ("")
             
-
-if __name__ == "__main__":
-    import firethorn
-    ft = firethorn.Firethorn(endpoint="http://localhost:8082/firethorn")
-    ft.login(firethorn.config.adminuser, firethorn.config.adminpass, firethorn.config.admingroup)
-    configurator = Configurator(ft)
-    configurator.setup_resources(json_file="https://raw.githubusercontent.com/stvoutsin/firethorn.py/master/firethorn/data/osa-tap.json")

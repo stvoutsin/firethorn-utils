@@ -18,7 +18,7 @@ setup(
     keywords = "firethorn vo",
     url = "http://wfau.metagrid.co.uk/code/firethorn",
     include_package_data = True,  
-    packages=['firethorn-utils', 'firethorn-utils.src'],
+    packages=['firethorn_utils'],
     long_description=read('README'),
     classifiers=[
         "Development Status :: 1 - Alpha",
