@@ -146,9 +146,9 @@ class Configurator(object):
 
     
         name = json_obect.get("name")
-        adql_resources_json = json_obect.get("AdqlResources")
-        jdbc_resources_json = json_obect.get("JdbcResources")
-        ivoa_resources_json = json_obect.get("IvoaResources")
+        adql_resources_json = json_obect.get("AdqlResources", [])
+        jdbc_resources_json = json_obect.get("JdbcResources", [])
+        ivoa_resources_json = json_obect.get("IvoaResources", [])
 
 
         self.load_jdbc_resources(jdbc_resources_json)
