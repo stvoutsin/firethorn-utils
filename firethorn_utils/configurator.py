@@ -33,20 +33,22 @@ class Configurator(object):
         Load JDBC resources into map from json_file
         """
         for jdbc_resource in jdbc_resources_json:
+            
             _id = jdbc_resource.get("id","")
             name = jdbc_resource.get("name","")
-            if  jdbc_resource["datauser" ]=="{datauser}":
-                datauser = os.getenv('datauser', "")
+            
+            if jdbc_resource["datauser" ].strip().startswith("{"):
+                datauser = os.getenv(jdbc_resource["datauser" ].strip()[1:-1], "")
             else:
                 datauser = jdbc_resource["datauser"]
                 
-            if  jdbc_resource["datapass" ]=="{datapass}":
-                datapass = os.getenv('datapass', "")
+            if jdbc_resource["datapass" ].strip().startswith("{"):
+                datapass = os.getenv(jdbc_resource["datapass" ].strip()[1:-1], "")
             else:
                 datapass = jdbc_resource["datapass"]
                 
-            if  jdbc_resource["datahost" ]=="{datahost}":
-                datahost = os.getenv('datahost', "")
+            if jdbc_resource["datahost" ].strip().startswith("{"):
+                datahost = os.getenv(jdbc_resource["datahost" ].strip()[1:-1], "")
             else:
                 datahost = jdbc_resource["datahost"]       
                                      
