@@ -36,19 +36,22 @@ class Configurator(object):
             
             _id = jdbc_resource.get("id","")
             name = jdbc_resource.get("name","")
-            
-            if jdbc_resource["datauser" ].strip().startswith("{"):
-                datauser = os.getenv(jdbc_resource["datauser" ].strip()[1:-1], "")
+            datauserstring = jdbc_resource["datauser"].strip()
+            datapasstring = jdbc_resource["datapass"].strip()
+            datahoststring = jdbc_resource["datahost"].strip()
+          
+            if datauserstring.strip().startswith("{"):
+                datauser = os.getenv(datauserstring[datauserstring.find("{")+1:datauserstring.find("}")], "")
             else:
                 datauser = jdbc_resource["datauser"]
                 
-            if jdbc_resource["datapass" ].strip().startswith("{"):
-                datapass = os.getenv(jdbc_resource["datapass" ].strip()[1:-1], "")
+            if datapasstring.startswith("{"):
+                datapass = os.getenv(datapasstring[datapasstring.find("{")+1:datapasstring.find("}")], "")
             else:
                 datapass = jdbc_resource["datapass"]
                 
-            if jdbc_resource["datahost" ].strip().startswith("{"):
-                datahost = os.getenv(jdbc_resource["datahost" ].strip()[1:-1], "")
+            if datahoststring.startswith("{"):
+                datahost = os.getenv(datahoststring[datahoststring.find("{")+1:datahoststring.find("}")], "")
             else:
                 datahost = jdbc_resource["datahost"]       
                                      
