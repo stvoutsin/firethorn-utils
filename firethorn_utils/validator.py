@@ -127,7 +127,7 @@ class Validator(object):
         for schema in resource.get_schemas():
             for table in schema.get_tables():
                 fullname = schema.name() + "." + table.name()
-                if (self.verbose==True):
+                if (self.verbose=='True'):
                     print(
                         "Testing [{}]".format(
                             fullname
@@ -149,7 +149,7 @@ class Validator(object):
                     processed[fullname] = rowcount
                     if (rowcount < 10):
                         candidates[fullname] = rowcount
-                        if (self.verbose==True):
+                        if (self.verbose=='True'):
                             print(
                                 "Candidate [{}] [{}]".format(
                                     fullname,
@@ -159,7 +159,7 @@ class Validator(object):
                 except:
                     message = sys.exc_info()[0]
                     exceptions[fullname] = message
-                    if (self.verbose==True):
+                    if (self.verbose=='True'):
                         print(
                            "Exception [{}] [{}]".format(
                                 fullname,
@@ -194,7 +194,6 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", dest="verbose", default=True,
                     help="Print status messages to stdout")
     args = parser.parse_args()    
-
 
 
     ft = firethorn.Firethorn(endpoint=args.firethorn_url)

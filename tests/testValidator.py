@@ -28,8 +28,6 @@ if __name__ == "__main__":
                     help="Print status messages to stdout")
     args = parser.parse_args()
 
-
-
     ft = firethorn.Firethorn(endpoint=args.firethorn_url)
     ft.login(args.username, args.password, args.group)
 
