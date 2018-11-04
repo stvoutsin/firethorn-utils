@@ -1,0 +1,31 @@
+version: '2.1'
+
+networks:
+
+    # Internal network
+    miriam:
+
+services:
+
+    
+    firethorn-utils:
+        hostname:
+            "firethorn-utils"
+        image:
+           "firethorn-utils:${buildtag:-latest}"
+        read_only:
+            false
+        stdin_open:
+            true
+        tty:
+            true
+        tmpfs:
+            - /run
+            - /tmp
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+        networks:
+            - miriam
+        command:
+            [bash]
+

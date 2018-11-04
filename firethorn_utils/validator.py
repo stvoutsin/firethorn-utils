@@ -17,7 +17,7 @@ try:
     import uuid
     import time
     from argparse import ArgumentParser
-
+    from util import Utility
 except Exception as e:
     logging.exception(e)
 
@@ -174,15 +174,14 @@ class Validator(object):
 
 
 
-
-if __name__ == "__main__":
+def main():
 
     '''
     Validator Arguments
     '''
     parser = ArgumentParser()
     parser.add_argument("-ft", "--firethorn_url", dest="firethorn_url",
-                    help="Firethorn Instance URL", metavar="Firethorn")
+                    help="Firethorn Instance URL", metavar="FIRETHORN")
     parser.add_argument("-r", "--resource_id", dest="resource_id",
                     help="Resource ID", metavar="RESOURCE")
     parser.add_argument("-u", "--username", dest="username",
@@ -191,8 +190,12 @@ if __name__ == "__main__":
                     help="Firethorn password", metavar="PASSWORD")
     parser.add_argument("-g", "--group", dest="group",
                     help="Firethorn group", metavar="GROUP")
-    parser.add_argument("-v", "--verbose", dest="verbose", default=True,
+    parser.add_argument("-v", "--verbose", dest="verbose", 
                     help="Print status messages to stdout")
+    parser.add_argument("-from", "--from", dest="from_email",
+                    help="Email from which to send Validation email", metavar="FROM")
+    parser.add_argument("-to", "--to", dest="to_email",
+                    help="Email to which to send Validation email", metavar="TO")
     args = parser.parse_args()    
 
 
@@ -215,3 +218,16 @@ if __name__ == "__main__":
     print ("Exceptions: ")
     print (validator_results.exceptions)
     print ("------------")
+
+    '''
+    Send exceptions by email
+    '''
+    if ((len(validator_results.exceptions)>0) and (args.from_email!=None) and (args.to_email!=None)):
+        print ("Sending email with exceptions to: " + args.to_email)
+        Utility.sendMail(args.from_email, args.to_email, "Validation Results - Database Exeptions", json.dumps(validator_results.exceptions))
+
+if __name__ == "__main__":
+    main()
+
+
+
