@@ -17,7 +17,7 @@ try:
     import uuid
     import time
     from argparse import ArgumentParser
-    from util import Utility
+    from .util import Utility
 except Exception as e:
     logging.exception(e)
 
