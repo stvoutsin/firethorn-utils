@@ -12,7 +12,7 @@ services:
         hostname:
             "firethorn-utils"
         image:
-           "firethorn-utils:${buildtag:-latest}"
+           "firethorn/firethorn-utils:${buildtag:-latest}"
         read_only:
             false
         stdin_open:
