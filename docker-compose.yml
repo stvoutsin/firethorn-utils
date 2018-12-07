@@ -1,0 +1,39 @@
+version: '2.1'
+
+networks:
+
+    # Internal network
+    miriam:
+
+services:
+
+    
+    firethorn-utils:
+        hostname:
+            "firethorn-utils"
+        image:
+           "firethorn/firethorn-utils:${buildtag:-latest}"
+        read_only:
+            false
+        stdin_open:
+            true
+        tty:
+            true
+        tmpfs:
+            - /run
+            - /tmp
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+        networks:
+            - miriam
+        environment:
+            firethorn_base: "${firethorn_base}"
+            resource_id: "${resource_id}"
+            ft_user: "${ft_user}"
+            ft_pass: "${ft_pass}"
+            ft_group: "${ft_group}"
+            to_email: "${to_email}"
+            from_email: "${from_email}"
+        command:
+            [bash]
+
