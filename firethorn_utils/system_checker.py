@@ -15,7 +15,7 @@ try:
     import uuid
     import time
     from argparse import ArgumentParser
-    from util import Utility
+    from .util import Utility
 except Exception as e:
     logging.exception(e)
 
@@ -126,7 +126,7 @@ def main():
     args = parser.parse_args()    
 
 
-    fHC_obj = FirethornHealthChecker("http://localhost:8081/firethorn")
+    fHC_obj = FirethornHealthChecker(args.firethorn_url)
 
     if (args.max_percent!=None):
         health_check_results = fHC_obj.check_disk_space(max_percent=args.max_percent)

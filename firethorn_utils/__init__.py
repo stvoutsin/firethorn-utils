@@ -1,9 +1,9 @@
 try:
     import logging
-    from . import configurator
-    from . import validator
-    from . import util
-    from . import system_checker
+    from .configurator import *
+    from .util import *
+    from .validator import *
+    from .system_checker import *
 except Exception as e:
     print ("Error during py imports..(py.py): " + str(e))
     logging.exception(e)
