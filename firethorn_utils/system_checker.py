@@ -114,6 +114,8 @@ def main():
     parser = ArgumentParser()
     parser.add_argument("-ft", "--firethorn_url", dest="firethorn_url",
                     help="Firethorn Instance URL", metavar="FIRETHORN")
+    parser.add_argument("-per", "--max-percent", dest="max_percent",
+                    help="Firethorn Instance URL", metavar="MAX PERCENT")
     parser.add_argument("-from", "--from", dest="from_email",
                     help="Email from which to send Validation email", metavar="FROM")
     parser.add_argument("-to", "--to", dest="to_email",
@@ -125,8 +127,12 @@ def main():
 
 
     fHC_obj = FirethornHealthChecker("http://localhost:8081/firethorn")
-    health_check_results = fHC_obj.check_disk_space(max_percent=30)
-  
+
+    if (args.max_percent!=None):
+        health_check_results = fHC_obj.check_disk_space(max_percent=args.max_percent)
+    else : 
+        health_check_results = fHC_obj.check_disk_space(max_percent=50)
+
       
     print (health_check_results.exceptions)
     print (health_check_results.message)
