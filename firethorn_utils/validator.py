@@ -98,6 +98,38 @@ class Validator(object):
         return
      
 
+    def format_name(self, name):
+        keywords=[
+            "first",
+            "diagnostics",
+            "match",
+            "region",
+            "zone",
+            "timestamp",
+            "coord2",
+            "coord1",
+            "size",
+            "min",
+            "max",
+            "match",
+            "zone",
+            "time",
+            "distance",
+            "value",
+            "sql",
+            "first",
+            "date",
+            "area",
+            "key",
+            "count",
+            "when"
+            ]
+        if (name.lower() in keywords):
+            return '"' + name + '"'
+        else:
+            return name
+
+
     def validate (self, resource_url):
         '''
         Validate an Adql Resource, Check all tables by querying and checking result row count
@@ -126,7 +158,7 @@ class Validator(object):
     
         for schema in resource.get_schemas():
             for table in schema.get_tables():
-                fullname = schema.name() + "." + table.name()
+                fullname = self.format_name(schema.name()) + "." + self.format_name(table.name())
                 if (self.verbose=='True'):
                     print(
                         "Testing [{}]".format(
@@ -135,8 +167,8 @@ class Validator(object):
                         )
                 try:
                     query_str = "SELECT TOP 10 * FROM {}.{}".format(
-                        schema.name(),
-                        table.name()
+                        self.format_name(schema.name()),
+                        self.format_name(table.name())
                         )
                     query_obj = resource.query(
                         query_str
