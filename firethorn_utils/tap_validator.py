@@ -18,6 +18,10 @@ try:
     import time
     from argparse import ArgumentParser
     from .util import Utility
+    import concurrent.futures
+    import urllib.parse
+    import random
+    import firethorn.tap.voQuery as voQuery
 except Exception as e:
     logging.exception(e)
 
@@ -83,9 +87,9 @@ class ValidatorResults(object):
 
 
 
-class Validator(object):
+class TAPValidator(object):
     '''
-    Validator class, used to validate an AdqlResource
+    Validator class, used to validate an AdqlResource via TAP queries
     '''
 
 
@@ -130,7 +134,7 @@ class Validator(object):
             return name
 
 
-    def validate (self, resource_url):
+    def validate (self, resource_url, resource_tap_url, mode="async"):
         '''
         Validate an Adql Resource, Check all tables by querying and checking result row count
         '''
@@ -168,18 +172,27 @@ class Validator(object):
                         )
                 try:
 
-                    query_str = "SELECT TOP 10 * FROM {}.{}".format(
+                    query_str = "SELECT TOP 5 * FROM {}.{}".format(
                         self.format_name(schema.name()),
                         self.format_name(table.name())
                         )
-                    query_obj = resource.query(
-                        query_str
-                        )
+
+
+
+                    sync_base_url = resource_tap_url + "/sync?QUERY=" + query_str 
+                    sync_params = "&REQUEST=doQuery&LANG=ADQL&FORMAT=VOTABLE"
+
+                    voqry = voQuery.VOQuery(endpointURL=resource_tap_url, query=query_str, mode=mode)
+                    voqry.run()
+
+                    #query_obj = resource.query(
+                    #    query_str
+                    #    )
 
 
                     #py_table = query_obj.results().as_astropy()
                     #py_table.pprint()
-                    rowcount = query_obj.results().rowcount()
+                    rowcount = voqry.rowcount()
                     processed[fullname] = rowcount
 
                     print ("Rowcount:" + str(rowcount))
@@ -196,7 +209,6 @@ class Validator(object):
                     logging.exception(e)
                     message = sys.exc_info()[0]
                     print (message)
-                    print (query_obj)
                     exceptions[fullname] = str(message)
                     if (self.verbose=='True'):
                         print(
@@ -207,7 +219,6 @@ class Validator(object):
                             )
                     print (exceptions)
 
-                print (query_obj)
                 total_time_table = time.time() - start_time_table
                 print ("Table query completed after %s seconds" % (total_time_table))
 
@@ -240,14 +251,17 @@ def main():
                     help="Email from which to send Validation email", metavar="FROM")
     parser.add_argument("-to", "--to", dest="to_email",
                     help="Email to which to send Validation email", metavar="TO")
+    parser.add_argument("-m", "--mode", dest="mode",
+                    help="TAP query mode (sync|async)", metavar="MODE")
+
     args = parser.parse_args()    
 
 
     ft = firethorn.Firethorn(endpoint=args.firethorn_url)
     ft.login(args.username, args.password, args.group)
 
-    validator_obj = Validator(ft, args.verbose)
-    validator_results = validator_obj.validate(args.firethorn_url + "/adql/resource/"  + args.resource_id)
+    validator_obj = TAPValidator(ft, args.verbose)
+    validator_results = validator_obj.validate(args.firethorn_url + "/adql/resource/"  + args.resource_id, args.firethorn_url + "/tap/"  + args.resource_id, mode=args.mode)
     
 
     print ("Processed: ")

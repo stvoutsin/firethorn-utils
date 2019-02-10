@@ -67,14 +67,14 @@ class FirethornHealthChecker(object):
             usable_bytes_in_gb = usable_bytes/1024/1024/1024
 
             if (min_available_bytes!=None):
-                if (usable_bytes<min_available_bytes):
+                if (usable_bytes<float(min_available_bytes)):
                     if (self.verbose):
                         print ("Disk space usage is too high! Available Disk Space: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)")
                     message = "Disk space usage is too high! Available Disk Space: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)"
                     exceptions["disk"] = message
 
             elif (max_percent!=None):
-                if (usage_percent>max_percent):
+                if (usage_percent>float(max_percent)):
                     if (self.verbose):
                         print("Disk space usage is too high! Available Disk Space: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)")
                     message = "Disk space usage is too high! Available Disk Space: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)"
