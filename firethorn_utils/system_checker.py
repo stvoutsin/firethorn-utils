@@ -79,8 +79,11 @@ class FirethornHealthChecker(object):
                         print("Disk space usage is too high! Available Disk Space: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)")
                     message = "Disk space usage is too high! Available Disk Space: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)"
                     exceptions["disk"] = message
+            
 
         except Exception as e:
+            exceptions["vm"] = str(e)
+            message = str(e)
             logging.exception(e)
 
         return FirethornCheckerResults(exceptions = exceptions, message = message)
@@ -142,7 +145,7 @@ def main():
     '''
     if ((len(health_check_results.exceptions)>0) and (args.from_email!=None) and (args.to_email!=None)):
         print ("Sending email with exceptions to: " + args.to_email)
-        Utility.sendMail(args.from_email, args.to_email, "Health Check Results for: " + args.firethorn_url, json.dumps(health_check_results.message))
+        Utility.sendMail(args.from_email, args.to_email, "Health Check Results for: " + args.firethorn_url, str(health_check_results.message))
 
 if __name__ == "__main__":
     main()

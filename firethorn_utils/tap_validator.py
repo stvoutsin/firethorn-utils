@@ -205,11 +205,14 @@ class TAPValidator(object):
                                     rowcount
                                     )
                                 )
+                    if (rowcount<0):
+                        raise Exception(voqry.get_error())
+
                 except Exception as e:
                     logging.exception(e)
                     message = sys.exc_info()[0]
                     print (message)
-                    exceptions[fullname] = str(message)
+                    exceptions[fullname] = str(e)
                     if (self.verbose=='True'):
                         print(
                            "Exception [{}] [{}]".format(

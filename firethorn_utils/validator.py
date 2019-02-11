@@ -197,7 +197,7 @@ class Validator(object):
                     message = sys.exc_info()[0]
                     print (message)
                     print (query_obj)
-                    exceptions[fullname] = str(message)
+                    exceptions[fullname] = str(e)
                     if (self.verbose=='True'):
                         print(
                            "Exception [{}] [{}]".format(
