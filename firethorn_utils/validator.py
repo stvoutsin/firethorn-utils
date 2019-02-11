@@ -183,7 +183,7 @@ class Validator(object):
                     processed[fullname] = rowcount
 
                     print ("Rowcount:" + str(rowcount))
-                    if (rowcount < 10):
+                    if (rowcount < 10 and rowcount>=0):
                         candidates[fullname] = rowcount
                         if (self.verbose=='True'):
                             print(
@@ -192,6 +192,13 @@ class Validator(object):
                                     rowcount
                                     )
                                 )
+
+                    if (rowcount<0):
+                        if (query_obj.error()!=None):
+                            exceptions[fullname] = str(query_obj.error())
+                        else : 
+                            exceptions[fullname] = "Unknown Exception"
+                        
                 except Exception as e:
                     logging.exception(e)
                     message = sys.exc_info()[0]

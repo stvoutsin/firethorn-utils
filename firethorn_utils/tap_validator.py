@@ -196,7 +196,7 @@ class TAPValidator(object):
                     processed[fullname] = rowcount
 
                     print ("Rowcount:" + str(rowcount))
-                    if (rowcount < 10):
+                    if (rowcount < 10 and rowcount>=0):
                         candidates[fullname] = rowcount
                         if (self.verbose=='True'):
                             print(
