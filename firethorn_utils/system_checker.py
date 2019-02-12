@@ -50,7 +50,45 @@ class FirethornHealthChecker(object):
         self.verbose = verbose
         self.firethorn_url = firethorn_url
         return
-     
+
+
+    def check_memory(self, max_percent=None, min_available_bytes=None):     
+
+        exceptions = {}
+        message = ""
+
+        try:
+            if (self.verbose):
+                print ("Checking Firethorn System: " + self.firethorn_url)
+
+            usable_bytes = int(self.get_system_info()["java"]["memory"]["total"])
+            total_bytes = int(self.get_system_info()["java"]["memory"]["max"])
+            usage_percent = 100-(usable_bytes/total_bytes*100)
+            usable_bytes_in_gb = usable_bytes/1024/1024/1024
+
+            if (min_available_bytes!=None):
+                if (usable_bytes<float(min_available_bytes)):
+                    if (self.verbose):
+                        print ("Memory usage is too high! Available Memory: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)")
+                    message = "Memory usage is too high! Available Memory: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)"
+                    exceptions["mem"] = message
+
+            elif (max_percent!=None):
+                if (usage_percent>float(max_percent)):
+                    if (self.verbose):
+                        print("Memory is too high! Available Memory: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)")
+                    message = "Memory usage is too high! Available Memory: " + ("%.2f" % usable_bytes_in_gb) + " GB  (" + ("%.2f" % usage_percent) + "% Full)"
+                    exceptions["mem"] = message
+
+
+        except Exception as e:
+            exceptions["vm"] = str(e)
+            message = str(e)
+            logging.exception(e)
+
+        return FirethornCheckerResults(exceptions = exceptions, message = message)
+
+
 
     def check_disk_space (self, max_percent=None, min_available_bytes=None):
 
@@ -63,7 +101,7 @@ class FirethornHealthChecker(object):
            
             usable_bytes = int(self.get_system_info()["java"]["disk"]["usable"])
             total_bytes = int(self.get_system_info()["java"]["disk"]["total"])
-            usage_percent = usable_bytes/total_bytes*100
+            usage_percent = 100-(usable_bytes/total_bytes*100)
             usable_bytes_in_gb = usable_bytes/1024/1024/1024
 
             if (min_available_bytes!=None):
@@ -117,8 +155,10 @@ def main():
     parser = ArgumentParser()
     parser.add_argument("-ft", "--firethorn_url", dest="firethorn_url",
                     help="Firethorn Instance URL", metavar="FIRETHORN")
-    parser.add_argument("-per", "--max-percent", dest="max_percent",
-                    help="Firethorn Instance URL", metavar="MAX PERCENT")
+    parser.add_argument("-disk_per", "--disk_max-percent", dest="disk_max_percent",
+                    help="Disk Space Max Percentage", metavar="DISK_MAX PERCENT")
+    parser.add_argument("-mem_per", "--mem_max_percent", dest="mem_max_percent",
+                    help="Memory Max Percentage", metavar="MEM_MAX PERCENT")
     parser.add_argument("-from", "--from", dest="from_email",
                     help="Email from which to send Validation email", metavar="FROM")
     parser.add_argument("-to", "--to", dest="to_email",
@@ -131,21 +171,40 @@ def main():
 
     fHC_obj = FirethornHealthChecker(args.firethorn_url)
 
-    if (args.max_percent!=None):
-        health_check_results = fHC_obj.check_disk_space(max_percent=args.max_percent)
+    if (args.disk_max_percent!=None):
+        disk_health_check_results = fHC_obj.check_disk_space(max_percent=args.disk_max_percent)
     else : 
-        health_check_results = fHC_obj.check_disk_space(max_percent=50)
+        disk_health_check_results = fHC_obj.check_disk_space(max_percent=70)
 
-      
-    print (health_check_results.exceptions)
-    print (health_check_results.message)
+    if (args.mem_max_percent!=None):
+        mem_health_check_results = fHC_obj.check_memory(max_percent=args.mem_max_percent)
+    else :
+        mem_health_check_results = fHC_obj.check_memory(max_percent=70)
+
+    print ("Disk usage")
+    print ("------------------------")
+
+    print (disk_health_check_results.exceptions)
+    print (disk_health_check_results.message)
+
+    print ("")
+    print ("")
+    print ("")
+
+
+    print ("Memory usage")
+    print ("------------------------")
+
+    print (mem_health_check_results.exceptions)
+    print (mem_health_check_results.message)
 
     '''
     Send exceptions by email
     '''
-    if ((len(health_check_results.exceptions)>0) and (args.from_email!=None) and (args.to_email!=None)):
+    if ((len(disk_health_check_results.exceptions)>0 or len(mem_health_check_results.exceptions)>0) and (args.from_email!=None) and (args.to_email!=None)):
         print ("Sending email with exceptions to: " + args.to_email)
-        Utility.sendMail(args.from_email, args.to_email, "Health Check Results for: " + args.firethorn_url, str(health_check_results.message))
+        results = str(disk_health_check_results.message) + " / " + str(mem_health_check_results.message)
+        Utility.sendMail(args.from_email, args.to_email, "Health Check Results for: " + args.firethorn_url, results)
 
 if __name__ == "__main__":
     main()
