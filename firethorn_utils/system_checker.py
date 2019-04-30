@@ -16,6 +16,7 @@ try:
     import time
     from argparse import ArgumentParser
     from .util import Utility
+    from .slack_sender import SlackSender
 except Exception as e:
     logging.exception(e)
 
@@ -163,8 +164,11 @@ def main():
                     help="Email from which to send Validation email", metavar="FROM")
     parser.add_argument("-to", "--to", dest="to_email",
                     help="Email to which to send Validation email", metavar="TO")
+    parser.add_argument("-slack", "--slack", dest="slack",
+                    help="Slack Web Hook to which to send validation message", metavar="SLACK")
     parser.add_argument("-v", "--verbose", dest="verbose",
                     help="Print status messages to stdout")
+    
 
     args = parser.parse_args()    
 
@@ -174,12 +178,32 @@ def main():
     if (args.disk_max_percent!=None):
         disk_health_check_results = fHC_obj.check_disk_space(max_percent=args.disk_max_percent)
     else : 
-        disk_health_check_results = fHC_obj.check_disk_space(max_percent=70)
+        disk_health_check_results = fHC_obj.check_disk_space(max_percent=85)
 
     if (args.mem_max_percent!=None):
         mem_health_check_results = fHC_obj.check_memory(max_percent=args.mem_max_percent)
     else :
-        mem_health_check_results = fHC_obj.check_memory(max_percent=70)
+        mem_health_check_results = fHC_obj.check_memory(max_percent=85)
+
+    print ("Disk usage")
+    print ("------------------------")
+
+    print (disk_health_check_results.exceptions)
+    print (disk_health_check_results.message)
+
+    print ("")
+    print ("")
+    print ("")
+
+
+    print ("Memory usage")
+    print ("------------------------")
+
+
+    if (args.mem_max_percent!=None):
+        mem_health_check_results = fHC_obj.check_memory(max_percent=args.mem_max_percent)
+    else :
+        mem_health_check_results = fHC_obj.check_memory(max_percent=85)
 
     print ("Disk usage")
     print ("------------------------")
@@ -205,6 +229,13 @@ def main():
         print ("Sending email with exceptions to: " + args.to_email)
         results = str(disk_health_check_results.message) + " / " + str(mem_health_check_results.message)
         Utility.sendMail(args.from_email, args.to_email, "Health Check Results for: " + args.firethorn_url, results)
+    elif ((len(disk_health_check_results.exceptions)>0 or len(mem_health_check_results.exceptions)>0) and (args.slack!=None)):
+        print ("Sending email with exceptions to Slack channel..")
+        results = str(disk_health_check_results.message) + " / " + str(mem_health_check_results.message)
+        slack_sender = SlackSender(args.slack)
+        slack_sender.send("Health Check Results for: " + args.firethorn_url + "/system/info " + "\n" + results)
+
+
 
 if __name__ == "__main__":
     main()

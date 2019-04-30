@@ -206,6 +206,10 @@ class TAPValidator(object):
                                     )
                                 )
                     if (rowcount<0):
+                        if (voqry.get_error()!=None):
+                            raise Exception(voqry.get_error())
+                        else:
+                            raise Exception("Unknown Exception")
                         raise Exception(voqry.get_error())
 
                 except Exception as e:

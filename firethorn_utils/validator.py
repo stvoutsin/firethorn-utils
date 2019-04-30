@@ -18,6 +18,7 @@ try:
     import time
     from argparse import ArgumentParser
     from .util import Utility
+    from .slack_sender import SlackSender
 except Exception as e:
     logging.exception(e)
 
@@ -247,6 +248,8 @@ def main():
                     help="Email from which to send Validation email", metavar="FROM")
     parser.add_argument("-to", "--to", dest="to_email",
                     help="Email to which to send Validation email", metavar="TO")
+    parser.add_argument("-slack", "--slack", dest="slack",
+                    help="Slack Web Hook to which to send validation message", metavar="SLACK")
     args = parser.parse_args()    
 
 
@@ -277,6 +280,10 @@ def main():
     if ((len(validator_results.exceptions)>0) and (args.from_email!=None) and (args.to_email!=None)):
         print ("Sending email with exceptions to: " + args.to_email)
         Utility.sendMail(args.from_email, args.to_email, "Validation Results - Database Exeptions", json.dumps(validator_results.exceptions))
+    elif ((len(disk_health_check_results.exceptions)>0 or len(mem_health_check_results.exceptions)>0) and (args.slack!=None)):
+        print ("Sending email with exceptions to Slack channel..")
+        slack_sender = SlackSender(args.slack)
+        slack_sender.send("Database Errors found for: " + args.firethorn_url + "\n" + json.dumps(validator_results.exceptions))
 
 if __name__ == "__main__":
     main()
