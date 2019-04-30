@@ -280,7 +280,7 @@ def main():
     if ((len(validator_results.exceptions)>0) and (args.from_email!=None) and (args.to_email!=None)):
         print ("Sending email with exceptions to: " + args.to_email)
         Utility.sendMail(args.from_email, args.to_email, "Validation Results - Database Exeptions", json.dumps(validator_results.exceptions))
-    elif ((len(disk_health_check_results.exceptions)>0 or len(mem_health_check_results.exceptions)>0) and (args.slack!=None)):
+    elif ((len(validator_results.exceptions)>0) and (args.slack!=None)):
         print ("Sending email with exceptions to Slack channel..")
         slack_sender = SlackSender(args.slack)
         slack_sender.send("Database Errors found for: " + args.firethorn_url + "\n" + json.dumps(validator_results.exceptions))
