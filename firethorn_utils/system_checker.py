@@ -62,9 +62,13 @@ class FirethornHealthChecker(object):
             if (self.verbose):
                 print ("Checking Firethorn System: " + self.firethorn_url)
 
-            usable_bytes = int(self.get_system_info()["java"]["memory"]["total"])
-            total_bytes = int(self.get_system_info()["java"]["memory"]["max"])
-            usage_percent = 100-(usable_bytes/total_bytes*100)
+            total_bytes = int(self.get_system_info()["java"]["memory"]["total"])
+            max_bytes = int(self.get_system_info()["java"]["memory"]["max"])
+            free_bytes = int(self.get_system_info()["java"]["memory"]["free"])
+           
+            used_memory = total_bytes-free_bytes
+            usable_bytes = max_bytes - used_memory
+            usage_percent = 100-(usable_bytes/max_bytes*100)
             usable_bytes_in_gb = usable_bytes/1024/1024/1024
 
             if (min_available_bytes!=None):
